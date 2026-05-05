@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
+import LevelSelector, { getStoredLevel } from "@/app/components/LevelSelector";
+import { LEVEL_PROFILES } from "@/lib/levelProfiles";
 
 type Message = {
   role: "user" | "assistant";
@@ -10,12 +12,16 @@ type Message = {
 
 type ChatError = { text: string; retry: () => void } | null;
 
-async function callApi(messages: Message[], systemPrompt: string): Promise<string> {
+async function callApi(
+  messages: Message[],
+  systemPrompt: string,
+  levelProfile: string,
+): Promise<string> {
   console.log(`[chat] → ${messages.length} msg(s)`);
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ messages, systemPrompt }),
+    body: JSON.stringify({ messages, systemPrompt, levelProfile }),
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Server error");
@@ -38,9 +44,10 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
   const bottomRef = useRef<HTMLDivElement>(null);
 
   function dispatch(msgs: Message[]) {
+    const levelProfile = LEVEL_PROFILES[getStoredLevel()];
     setLoading(true);
     setChatError(null);
-    callApi(msgs, systemPrompt)
+    callApi(msgs, systemPrompt, levelProfile)
       .then((reply) => setMessages([...msgs, { role: "assistant", content: reply }]))
       .catch((err) => {
         const text = err instanceof Error ? err.message : "Unknown error";
@@ -83,7 +90,8 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
         <Link href={backHref} className="text-sm text-gray-500 shrink-0">
           ← Wróć
         </Link>
-        <div className="flex items-center gap-1 ml-auto">
+        <div className="ml-auto flex items-center gap-2">
+          <LevelSelector />
           <span className="text-lg">{emoji}</span>
           <span className="font-semibold text-sm text-gray-900">{name}</span>
         </div>

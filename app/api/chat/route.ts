@@ -4,12 +4,17 @@ import Anthropic from "@anthropic-ai/sdk";
 export async function POST(request: Request) {
   try {
     const client = new Anthropic();
-    const { messages, systemPrompt } = await request.json() as {
+    const { messages, systemPrompt, levelProfile } = await request.json() as {
       messages: { role: "user" | "assistant"; content: string }[];
       systemPrompt: string;
+      levelProfile?: string;
     };
 
     console.log(`[api/chat] received ${messages.length} msg(s)`);
+
+    const fullSystemPrompt = levelProfile
+      ? `${levelProfile}\n\n---\n\n${systemPrompt}`
+      : systemPrompt;
 
     // Cap to last 20 messages to avoid token-limit failures in long conversations.
     // The *enters* trigger is always prepended, so the model never sees a bare assistant-first history.
@@ -29,7 +34,7 @@ export async function POST(request: Request) {
       {
         model: "claude-haiku-4-5-20251001",
         max_tokens: 256,
-        system: systemPrompt,
+        system: fullSystemPrompt,
         messages: apiMessages,
       },
       { timeout: 30_000 },

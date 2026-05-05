@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { scenarios } from "@/lib/scenarios";
+import LevelSelector from "@/app/components/LevelSelector";
 
 export default function Home() {
   return (
@@ -9,6 +10,9 @@ export default function Home() {
           <div className="text-4xl mb-2">🇵🇱</div>
           <h1 className="text-xl font-bold text-gray-900">Ćwicz polski</h1>
           <p className="text-sm text-gray-500 mt-1">Wybierz scenariusz</p>
+          <div className="flex justify-center mt-3">
+            <LevelSelector />
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3">
