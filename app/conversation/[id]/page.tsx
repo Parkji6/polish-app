@@ -10,7 +10,10 @@ type Message = {
   content: string;
 };
 
+type ChatError = { text: string; retry: () => void } | null;
+
 async function callApi(messages: Message[], systemPrompt: string): Promise<string> {
+  console.log(`[chat] → ${messages.length} msg(s)`);
   const res = await fetch("/api/chat", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -18,6 +21,7 @@ async function callApi(messages: Message[], systemPrompt: string): Promise<strin
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.error ?? "Server error");
+  console.log("[chat] ← reply received");
   return data.content;
 }
 
@@ -30,34 +34,43 @@ export default function ConversationPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  const [chatError, setChatError] = useState<ChatError>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
+
+  function dispatch(msgs: Message[]) {
+    setLoading(true);
+    setChatError(null);
+    callApi(msgs, scenario!.systemPrompt)
+      .then((reply) => setMessages([...msgs, { role: "assistant", content: reply }]))
+      .catch((err) => {
+        const text = err instanceof Error ? err.message : "Unknown error";
+        console.error("[chat] error:", text);
+        setChatError({ text: "Coś poszło nie tak.", retry: () => dispatch(msgs) });
+      })
+      .finally(() => setLoading(false));
+  }
 
   useEffect(() => {
     if (!scenario) { router.replace("/"); return; }
     setMessages([]);
-    setLoading(true);
-    callApi([], scenario.systemPrompt)
-      .then((reply) => setMessages([{ role: "assistant", content: reply }]))
-      .finally(() => setLoading(false));
+    setChatError(null);
+    dispatch([]);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [messages, loading]);
+  }, [messages, loading, chatError]);
 
   if (!scenario) return null;
 
-  async function handleSend() {
+  function handleSend() {
     const text = input.trim();
     if (!text || loading) return;
     const next: Message[] = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
-    setLoading(true);
-    const reply = await callApi(next, scenario!.systemPrompt);
-    setMessages([...next, { role: "assistant", content: reply }]);
-    setLoading(false);
+    dispatch(next);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -91,12 +104,22 @@ export default function ConversationPage() {
             <div className="bg-gray-100 text-gray-400 text-sm px-3 py-2 rounded-2xl rounded-bl-sm">...</div>
           </div>
         )}
+        {chatError && (
+          <div className="flex justify-start">
+            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-2xl flex items-center gap-2">
+              <span>{chatError.text}</span>
+              <button onClick={chatError.retry} className="underline font-medium shrink-0">
+                Spróbuj ponownie
+              </button>
+            </div>
+          </div>
+        )}
         <div ref={bottomRef} />
       </div>
 
       <div className="border-t px-4 py-3 flex gap-2">
         <input
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm outline-none focus:border-gray-500"
+          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 outline-none focus:border-gray-500"
           placeholder="Wpisz po polsku..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
