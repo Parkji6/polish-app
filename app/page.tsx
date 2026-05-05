@@ -1,3 +1,5 @@
+import Link from "next/link";
+
 export default function Home() {
   return (
     <main className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-red-50 to-white px-6 py-12">
@@ -21,6 +23,13 @@ export default function Home() {
           Building day by day.{" "}
           <span className="font-medium text-gray-700">Dzień po dniu.</span>
         </p>
+
+        <Link
+          href="/conversation"
+          className="block w-full bg-red-700 text-white text-center font-semibold py-3 rounded-2xl"
+        >
+          Porozmawiaj po polsku →
+        </Link>
       </div>
     </main>
   );
