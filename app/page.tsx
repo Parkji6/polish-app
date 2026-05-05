@@ -6,7 +6,7 @@ export default function Home() {
         <div className="text-6xl">🇵🇱</div>
 
         <h1 className="text-3xl font-bold text-red-700 tracking-tight">
-          Cześć!
+          Dzień dobry!
         </h1>
 
         <p className="text-xl text-gray-700 font-medium">
