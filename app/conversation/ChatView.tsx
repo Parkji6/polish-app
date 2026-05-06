@@ -14,6 +14,7 @@ type Message = {
   role: "user" | "assistant";
   content: string;
   translation?: string;
+  correction?: string;
 };
 
 type ChatError = { text: string; retry: () => void } | null;
@@ -128,14 +129,35 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
     speak(stripForSpeech(lastMsg.content)).finally(() => setSpeakingIndex(null));
   }, [messages, autoPlay, loading]);
 
+  async function checkGrammar(text: string, messageIndex: number) {
+    try {
+      const res = await fetch("/api/grammar", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ text }),
+      });
+      const data = await res.json();
+      const correction: string = data.correction ?? "✓";
+      if (correction !== "✓") {
+        setMessages((prev) =>
+          prev.map((m, i) => (i === messageIndex ? { ...m, correction } : m)),
+        );
+      }
+    } catch {
+      // grammar check is non-critical — fail silently
+    }
+  }
+
   function handleSend() {
     const text = input.trim();
     if (!text || loading) return;
+    const userIndex = messages.length;
     const next: Message[] = [...messages, { role: "user", content: text }];
     setMessages(next);
     setInput("");
     setExpandedIndex(null);
     dispatch(next);
+    checkGrammar(text, userIndex);
   }
 
   function handleKeyDown(e: React.KeyboardEvent) {
@@ -285,6 +307,12 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
               >
                 {msg.content}
               </div>
+
+              {msg.role === "user" && msg.correction && (
+                <div className="mt-1 px-2 py-1.5 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800 max-w-full whitespace-pre-wrap">
+                  {msg.correction}
+                </div>
+              )}
 
               {expandedIndex === i && (
                 <div className="flex flex-col gap-1.5 mt-1 px-1 w-full">
