@@ -7,6 +7,11 @@ export default function Home() {
     <main className="min-h-screen bg-white px-4 py-10">
       <div className="max-w-sm mx-auto">
         <div className="text-center mb-8">
+          <div className="flex justify-end mb-1">
+            <Link href="/reports" className="text-xs text-gray-400 hover:text-gray-600">
+              Zgłoszenia
+            </Link>
+          </div>
           <div className="text-4xl mb-2">🇵🇱</div>
           <h1 className="text-xl font-bold text-gray-900">Ćwicz polski</h1>
           <p className="text-sm text-gray-500 mt-1">Wybierz scenariusz</p>
