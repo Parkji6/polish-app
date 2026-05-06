@@ -25,7 +25,7 @@ export async function POST(request: Request) {
 
     const apiMessages = [
       { role: "user" as const, content: "*enters*" },
-      ...capped,
+      ...capped.map((m) => ({ role: m.role, content: m.content })),
     ];
 
     console.log(`[api/chat] forwarding ${apiMessages.length} msg(s) to model`);
