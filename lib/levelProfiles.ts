@@ -4,9 +4,9 @@ export const DEFAULT_LEVEL: Level = "A1";
 export const STORAGE_KEY = "polish-app:level";
 
 export const LEVEL_PROFILES: Record<Level, string> = {
-  A1: `CEFR LEVEL A1 (Beginner): Use only simple present tense. Limit yourself to the most common ~500 words. Keep sentences to ~8 words maximum. Gloss every word the learner might not know by putting the English translation in parentheses immediately after it, e.g. "Chcę (I want) kawę". Repeat or rephrase if the user seems confused. Speak slowly and patiently.`,
+  A1: `CEFR LEVEL A1 (Beginner): Use only simple present tense. Limit yourself to the most common ~500 words. Keep sentences to ~8 words maximum. Gloss every word the learner might not know: write the Polish word first, then the English translation in parentheses immediately after — e.g. "Chcę (I want) kawę (coffee)". NEVER reverse this: do not write English as the main text with Polish in parentheses. Wrong: "I want (chcę) coffee (kawę)." Always: "Chcę (I want) kawę (coffee)." Repeat or rephrase if the user seems confused. Speak slowly and patiently.`,
 
-  A2: `CEFR LEVEL A2 (Elementary): Use present tense and simple past (both aspects). Common vocabulary (~1500 words). Sentences up to ~12 words. Gloss harder or new words in parentheses on first use. Encourage the user when they get things right.`,
+  A2: `CEFR LEVEL A2 (Elementary): Use present tense and simple past (both aspects). Common vocabulary (~1500 words). Sentences up to ~12 words. Gloss harder or new words in parentheses on first use — Polish word first, English gloss in parentheses after it (e.g. "tramwaj (tram)"). Never write English as the main language with Polish in parentheses. Encourage the user when they get things right.`,
 
   B1: `CEFR LEVEL B1 (Intermediate): Use present, past, and future tenses naturally. No glosses — if the user doesn't know a word they can ask. Introduce common idiomatic phrases naturally. Normal conversational pace. No sentence length limit.`,
 
