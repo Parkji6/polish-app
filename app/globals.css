@@ -1,26 +1,138 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+/* ── BD design tokens (static) ─────────────────────────────── */
+@theme {
+  --color-bd-bg:         #ece7da;
+  --color-bd-panel:      #f5f1e6;
+  --color-bd-ink:        #14110d;
+  --color-bd-ink2:       #3a342b;
+  --color-bd-ink3:       #6f6757;
+  --color-bd-rule:       #1a1714;
+  --color-bd-rule-soft:  #cfc8b6;
+  --color-bd-ember:      #d24a26;
+  --color-bd-ember-soft: #f3d9cf;
 }
 
+/* ── Font families (reference next/font CSS vars) ──────────── */
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-background: #ece7da;
+  --color-foreground: #14110d;
+  --font-sans:        var(--font-hanken-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-bd-display:  var(--font-space-grotesk), var(--font-hanken-grotesk), ui-sans-serif, system-ui, sans-serif;
+  --font-bd-mono:     var(--font-jetbrains-mono), ui-monospace, monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* ── Keyframes ──────────────────────────────────────────────── */
+@keyframes bd-fade-up {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes bd-bubble-in {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: none; }
+}
+@keyframes bd-blink {
+  0%, 80%, 100% { opacity: .25; }
+  40%           { opacity: 1; }
 }
 
+/* ── Base ───────────────────────────────────────────────────── */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: #ece7da;
+  color: #14110d;
+  font-family: var(--font-hanken-grotesk), ui-sans-serif, system-ui, sans-serif;
+  font-size: 14px;
+  line-height: 1.4;
+  letter-spacing: -0.005em;
+}
+
+/* ── Typography utilities ───────────────────────────────────── */
+@layer utilities {
+  /* Heavy display — Space Grotesk 700, tight tracking, line-height .92 */
+  .bd-display {
+    font-family: var(--font-space-grotesk), var(--font-hanken-grotesk), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 700;
+    letter-spacing: -0.035em;
+    line-height: .92;
+  }
+  /* Medium display — Space Grotesk 600 */
+  .bd-display-md {
+    font-family: var(--font-space-grotesk), var(--font-hanken-grotesk), ui-sans-serif, system-ui, sans-serif;
+    font-weight: 600;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+  }
+  /* Mono caption — JetBrains Mono 400, 11px, ALL CAPS, +0.02em */
+  .bd-mono {
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+  }
+  /* Tabular numerals */
+  .bd-num {
+    font-variant-numeric: tabular-nums lining-nums;
+  }
+  /* Animation helpers */
+  .bd-fade-up   { animation: bd-fade-up   .45s cubic-bezier(.2,.7,.3,1) both; }
+  .bd-bubble-in { animation: bd-bubble-in .3s  cubic-bezier(.2,.7,.3,1) both; }
+  .bd-blink     { animation: bd-blink 1.2s infinite; }
+}
+
+/* ── Component classes ──────────────────────────────────────── */
+@layer components {
+  /* Hard-bordered box: 1.5px ink rule, 4px radius */
+  .bd-hard {
+    border: 1.5px solid #1a1714;
+    border-radius: 4px;
+  }
+
+  /* Mono pill — outline by default, filled when .bd-pill-on */
+  .bd-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border: 1.5px solid #1a1714;
+    font-family: var(--font-jetbrains-mono), ui-monospace, monospace;
+    font-size: 12px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    border-radius: 2px;
+    cursor: pointer;
+    background: transparent;
+    color: #14110d;
+    transition: background 0.15s, color 0.15s;
+  }
+  .bd-pill-on {
+    background: #14110d;
+    color: #ece7da;
+  }
+
+  /* Typing indicator dot */
+  .bd-typing-dot {
+    width: 6px;
+    height: 6px;
+    background: #3a342b;
+    display: inline-block;
+    margin-right: 3px;
+    animation: bd-blink 1.2s infinite;
+  }
+  .bd-typing-dot:nth-child(2) { animation-delay: .15s; }
+  .bd-typing-dot:nth-child(3) { animation-delay: .3s; }
+
+  /* Hover / active card lift */
+  .bd-card-hover {
+    transition: transform .18s cubic-bezier(.2,.7,.3,1), box-shadow .18s cubic-bezier(.2,.7,.3,1);
+  }
+  .bd-card-hover:hover {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 #1a1714;
+  }
+  .bd-card-hover:active {
+    transform: translate(-2px, -2px);
+    box-shadow: 4px 4px 0 #1a1714;
+    transition-duration: .15s;
+  }
 }
