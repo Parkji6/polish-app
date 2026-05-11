@@ -3,8 +3,8 @@
 import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import LevelSelector, { getStoredLevel } from "@/app/components/LevelSelector";
-import { LEVEL_PROFILES } from "@/lib/levelProfiles";
+import { getStoredLevel } from "@/app/components/LevelSelector";
+import { LEVEL_PROFILES, DEFAULT_LEVEL, type Level } from "@/lib/levelProfiles";
 import { speak, cancel } from "@/lib/tts";
 import { saveReport } from "@/lib/reports";
 
@@ -43,7 +43,7 @@ type Props = {
   backHref: string;
 };
 
-export default function ChatView({ systemPrompt, emoji, name, backHref }: Props) {
+export default function ChatView({ systemPrompt, emoji: _emoji, name, backHref }: Props) {
   const pathname = usePathname();
   const storageKey = `polish-app:messages:${pathname}`;
 
@@ -59,15 +59,16 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
   const [reportingIndex, setReportingIndex] = useState<number | null>(null);
   const [reportNote, setReportNote] = useState("");
   const [savedIndex, setSavedIndex] = useState<number | null>(null);
+  const [currentLevel, setCurrentLevel] = useState<Level>(DEFAULT_LEVEL);
   const bottomRef = useRef<HTMLDivElement>(null);
   const lastSpokenRef = useRef<number>(-1);
 
   useEffect(() => {
     const stored = localStorage.getItem(TTS_AUTOPLAY_KEY);
     if (stored === "1") setAutoPlay(true);
+    setCurrentLevel(getStoredLevel());
   }, []);
 
-  // Persist messages (with cached translations) to localStorage.
   useEffect(() => {
     if (messages.length === 0) return;
     localStorage.setItem(storageKey, JSON.stringify(messages));
@@ -116,8 +117,6 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading, chatError]);
 
-  // Auto-play the latest assistant message when autoPlay is on.
-  // Note: on iOS Safari, this will be silently blocked unless triggered by a user gesture.
   useEffect(() => {
     if (!autoPlay || loading) return;
     const lastMsg = messages[messages.length - 1];
@@ -144,7 +143,7 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
         );
       }
     } catch {
-      // grammar check is non-critical — fail silently
+      // non-critical
     }
   }
 
@@ -172,7 +171,6 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
     setReportingIndex(null);
   }
 
-  // Remove English glosses "(I want)" and stage directions "*smiles*" before TTS.
   function stripForSpeech(text: string): string {
     return text
       .replace(/\s*\([^)]+\)/g, "")
@@ -266,167 +264,225 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
   }
 
   return (
-    <div className="flex flex-col h-screen bg-white max-w-sm mx-auto">
-      <div className="border-b px-4 py-3 flex items-center gap-2">
-        <Link href={backHref} className="text-sm text-gray-500 shrink-0">
-          ← Wróć
-        </Link>
-        <div className="ml-auto flex items-center gap-2">
-          <button
-            onClick={toggleAutoPlay}
-            className={`text-xs transition-colors ${autoPlay ? "text-gray-700" : "text-gray-300"}`}
-            aria-label={autoPlay ? "Auto-play włączony" : "Auto-play wyłączony"}
-            title={autoPlay ? "Auto-play: On" : "Auto-play: Off"}
+    <div className="flex flex-col h-screen bg-bd-bg">
+
+      {/* ── Header ──────────────────────────────────────────── */}
+      <div className="bg-bd-panel border-b border-bd-rule px-4 md:px-8 py-[14px] flex items-start gap-3 shrink-0">
+        {/* Ember initial square */}
+        <div
+          className="w-[46px] h-[46px] bg-bd-ember text-white flex items-center justify-center bd-display text-xl shrink-0 mt-0.5"
+          style={{ borderRadius: 2 }}
+        >
+          {name[0].toUpperCase()}
+        </div>
+
+        {/* Scenario name + title */}
+        <div className="flex-1 min-w-0">
+          <p className="bd-mono text-bd-ink2">Live · {name}</p>
+          <div className="bd-display uppercase text-[22px] md:text-[34px] mt-0.5">
+            {name}
+          </div>
+        </div>
+
+        {/* Right controls */}
+        <div className="flex flex-col items-end gap-2 shrink-0">
+          <div className="flex items-center gap-1.5">
+            <span
+              className="bd-mono px-2 py-1 bg-bd-ember text-white"
+              style={{ borderRadius: 2 }}
+            >
+              {currentLevel}
+            </span>
+            <button
+              onClick={toggleAutoPlay}
+              className={`bd-pill ${autoPlay ? "bd-pill-on" : ""}`}
+              style={{ padding: "4px 8px" }}
+              aria-label={autoPlay ? "Auto-play włączony" : "Auto-play wyłączony"}
+            >
+              {autoPlay ? "AUTO" : "MUTE"}
+            </button>
+          </div>
+          <Link
+            href={backHref}
+            className="bd-mono text-bd-ink2 hover:text-bd-ink"
+            style={{ border: "1.5px solid #1a1714", borderRadius: 2, padding: "4px 8px" }}
           >
-            {autoPlay ? "🔊" : "🔇"}
-          </button>
-          <LevelSelector />
-          <span className="text-lg">{emoji}</span>
-          <span className="font-semibold text-sm text-gray-900">{name}</span>
+            ← Wybierz inny
+          </Link>
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-4 py-4 space-y-3">
-        {messages.map((msg, i) => (
-          <div
-            key={i}
-            className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-          >
-            <div
-              className={`flex flex-col max-w-[80%] ${
-                msg.role === "user" ? "items-end" : "items-start"
-              }`}
-            >
-              <div
-                className={`px-3 py-2 rounded-2xl text-sm select-none cursor-pointer active:opacity-70 ${
-                  msg.role === "user"
-                    ? "bg-black text-white rounded-br-sm"
-                    : "bg-gray-100 text-gray-900 rounded-bl-sm"
-                }`}
-                onClick={() => handleMessageTap(i)}
-              >
-                {msg.content}
-              </div>
+      {/* ── Messages ────────────────────────────────────────── */}
+      <div className="flex-1 overflow-y-auto px-4 py-5 space-y-4">
+        {messages.map((msg, i) => {
+          const me = msg.role === "user";
+          const isNew = i === messages.length - 1;
+          return (
+            <div key={i} className={`flex ${me ? "justify-end" : "justify-start"}`}>
+              <div className={`flex flex-col ${me ? "items-end" : "items-start"} max-w-[85%] md:max-w-[72%]`}>
 
-              {msg.role === "user" && msg.correction && (
-                <div className="mt-1 px-2 py-1.5 bg-amber-50 border border-amber-100 rounded-xl text-xs text-amber-800 max-w-full whitespace-pre-wrap">
-                  {msg.correction}
-                </div>
-              )}
+                {/* Bubble */}
+                <div
+                  className={[
+                    "bd-hard cursor-pointer select-none active:opacity-80 px-5 py-4",
+                    isNew ? "bd-bubble-in" : "",
+                    me ? "bg-bd-ink text-bd-bg" : "bg-white text-bd-ink",
+                  ].join(" ")}
+                  onClick={() => handleMessageTap(i)}
+                >
+                  {/* Mono caption */}
+                  <p
+                    className="bd-mono mb-1.5"
+                    style={{ color: me ? "rgba(236,231,218,.55)" : "var(--color-bd-ink2)" }}
+                  >
+                    {me ? "you" : "them"} · {String(i + 1).padStart(2, "0")}
+                  </p>
 
-              {expandedIndex === i && (
-                <div className="flex flex-col gap-1.5 mt-1 px-1 w-full">
-                  {/* Action buttons */}
-                  <div className="flex gap-3">
-                    <button
-                      className={`text-sm transition-colors ${
-                        speakingIndex === i
-                          ? "text-gray-800"
-                          : "text-gray-400 hover:text-gray-600 active:text-gray-800"
-                      }`}
-                      aria-label={speakingIndex === i ? "Zatrzymaj" : "Odtwórz"}
-                      onClick={() => handleSpeak(i, msg.content)}
-                    >
-                      {speakingIndex === i ? "⏸" : "🔊"}
-                    </button>
-                    {msg.role === "assistant" && (
-                      <button
-                        className={`text-sm transition-colors ${
-                          visibleTranslationIndex === i
-                            ? "text-gray-700"
-                            : "text-gray-400 hover:text-gray-600 active:text-gray-800"
-                        }`}
-                        aria-label="Przetłumacz"
-                        onClick={() => handleTranslate(i, msg.content)}
-                      >
-                        🇬🇧
-                      </button>
-                    )}
-                    <button
-                      className={`text-sm transition-colors ${
-                        reportingIndex === i
-                          ? "text-gray-700"
-                          : "text-gray-400 hover:text-gray-600 active:text-gray-800"
-                      }`}
-                      aria-label="Zgłoś"
-                      onClick={() => handleReportOpen(i)}
-                    >
-                      🚩
-                    </button>
-                  </div>
+                  {/* Polish text */}
+                  <p className="bd-display-md text-[22px] md:text-[24px]">
+                    {msg.content}
+                  </p>
 
-                  {/* Translation */}
+                  {/* Translation (nested inside bubble) */}
                   {translatingIndex === i && (
-                    <p className="text-xs text-gray-400 italic">...</p>
+                    <p
+                      className="mt-2 text-[13px] italic"
+                      style={{ color: me ? "rgba(236,231,218,.5)" : "var(--color-bd-ink2)" }}
+                    >
+                      …
+                    </p>
                   )}
                   {visibleTranslationIndex === i && msg.translation && (
-                    <p className="text-xs text-gray-400 italic">{msg.translation}</p>
-                  )}
-
-                  {/* Report form */}
-                  {reportingIndex === i && (
-                    <div className="flex flex-col gap-2 mt-1">
-                      <textarea
-                        className="w-full border border-gray-200 rounded-xl px-3 py-2 text-xs text-gray-700 outline-none focus:border-gray-400 resize-none"
-                        rows={3}
-                        placeholder="Co jest nie tak? / What's wrong?"
-                        value={reportNote}
-                        onChange={(e) => setReportNote(e.target.value)}
-                        autoFocus
-                      />
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleReportSave(i)}
-                          className="text-xs bg-gray-900 text-white px-3 py-1.5 rounded-full"
-                        >
-                          Zapisz
-                        </button>
-                        <button
-                          onClick={() => { setReportingIndex(null); setReportNote(""); }}
-                          className="text-xs text-gray-400 hover:text-gray-600 px-2 py-1.5"
-                        >
-                          Anuluj
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Save confirmation */}
-                  {savedIndex === i && (
-                    <p className="text-xs text-gray-500">Zapisano ✓</p>
+                    <p
+                      className="mt-2 text-[13px]"
+                      style={{ color: me ? "rgba(236,231,218,.7)" : "var(--color-bd-ink2)" }}
+                    >
+                      {msg.translation}
+                    </p>
                   )}
                 </div>
-              )}
+
+                {/* Grammar correction */}
+                {msg.role === "user" && msg.correction && (
+                  <div
+                    className="mt-1.5 px-3 py-2 text-[12px] text-amber-800 max-w-full whitespace-pre-wrap"
+                    style={{ background: "#fffbeb", border: "1.5px solid #fde68a", borderRadius: 4 }}
+                  >
+                    {msg.correction}
+                  </div>
+                )}
+
+                {/* Expanded action bar */}
+                {expandedIndex === i && (
+                  <div className="flex flex-col gap-2 mt-2 w-full">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <button
+                        className={`bd-pill ${speakingIndex === i ? "bd-pill-on" : ""}`}
+                        style={{ padding: "4px 8px" }}
+                        aria-label={speakingIndex === i ? "Zatrzymaj" : "Odtwórz"}
+                        onClick={() => handleSpeak(i, msg.content)}
+                      >
+                        {speakingIndex === i ? "⏸ STOP" : "🔊 HEAR"}
+                      </button>
+
+                      {msg.role === "assistant" && (
+                        <button
+                          className={`bd-pill ${visibleTranslationIndex === i ? "bd-pill-on" : ""}`}
+                          style={{ padding: "4px 8px" }}
+                          aria-label="Przetłumacz"
+                          onClick={() => handleTranslate(i, msg.content)}
+                        >
+                          EN
+                        </button>
+                      )}
+
+                      <button
+                        className={`bd-pill ${reportingIndex === i ? "bd-pill-on" : ""}`}
+                        style={{ padding: "4px 8px" }}
+                        aria-label="Zgłoś"
+                        onClick={() => handleReportOpen(i)}
+                      >
+                        🚩 FLAG
+                      </button>
+                    </div>
+
+                    {reportingIndex === i && (
+                      <div className="flex flex-col gap-2">
+                        <textarea
+                          className="w-full text-[12px] text-bd-ink outline-none resize-none"
+                          style={{ background: "#ece7da", border: "1.5px solid #1a1714", borderRadius: 4, padding: "8px 12px" }}
+                          rows={3}
+                          placeholder="Co jest nie tak? / What's wrong?"
+                          value={reportNote}
+                          onChange={(e) => setReportNote(e.target.value)}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleReportSave(i)}
+                            className="bd-mono text-bd-bg bg-bd-ink px-3 py-1.5"
+                            style={{ borderRadius: 2 }}
+                          >
+                            Zapisz
+                          </button>
+                          <button
+                            onClick={() => { setReportingIndex(null); setReportNote(""); }}
+                            className="bd-mono text-bd-ink2 hover:text-bd-ink px-2 py-1.5"
+                          >
+                            Anuluj
+                          </button>
+                        </div>
+                      </div>
+                    )}
+
+                    {savedIndex === i && (
+                      <p className="bd-mono text-bd-ink2">Zapisano ✓</p>
+                    )}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
+
+        {/* Typing indicator */}
         {loading && (
           <div className="flex justify-start">
-            <div className="bg-gray-100 text-gray-400 text-sm px-3 py-2 rounded-2xl rounded-bl-sm">
-              ...
+            <div className="bd-hard bg-white px-5 py-4 flex items-center">
+              <span className="bd-typing-dot" />
+              <span className="bd-typing-dot" />
+              <span className="bd-typing-dot" />
             </div>
           </div>
         )}
+
+        {/* Error */}
         {chatError && (
           <div className="flex justify-start">
-            <div className="bg-red-50 border border-red-200 text-red-700 text-sm px-3 py-2 rounded-2xl flex items-center gap-2">
-              <span>{chatError.text}</span>
+            <div
+              className="bd-hard px-4 py-3 text-[13px] flex items-center gap-3"
+              style={{ background: "var(--color-bd-ember-soft)", borderColor: "var(--color-bd-ember)" }}
+            >
+              <span className="text-bd-ink">{chatError.text}</span>
               <button
                 onClick={chatError.retry}
-                className="underline font-medium shrink-0"
+                className="bd-mono text-bd-ember hover:text-bd-ink"
               >
-                Spróbuj ponownie
+                Spróbuj →
               </button>
             </div>
           </div>
         )}
+
         <div ref={bottomRef} />
       </div>
 
-      <div className="border-t px-4 py-3 flex gap-2">
+      {/* ── Composer ────────────────────────────────────────── */}
+      <div className="bg-bd-panel border-t border-bd-rule px-8 py-[18px] flex items-center gap-3 shrink-0">
         <input
-          className="flex-1 border border-gray-300 rounded-full px-4 py-2 text-sm text-gray-900 outline-none focus:border-gray-500"
-          placeholder="Wpisz po polsku..."
+          className="flex-1 text-[14px] text-bd-ink outline-none placeholder:text-bd-ink3"
+          style={{ background: "#ece7da", border: "1.5px solid #1a1714", borderRadius: 4, padding: "14px 18px" }}
+          placeholder="Napisz po polsku — albo spróbuj…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
@@ -435,11 +491,14 @@ export default function ChatView({ systemPrompt, emoji, name, backHref }: Props)
         <button
           onClick={handleSend}
           disabled={loading || !input.trim()}
-          className="bg-black text-white text-sm px-4 py-2 rounded-full disabled:opacity-40"
+          className="bg-bd-ember text-white flex items-center justify-center text-[22px] disabled:opacity-40 shrink-0"
+          style={{ width: 54, height: 54, borderRadius: 2 }}
+          aria-label="Wyślij"
         >
-          Wyślij
+          →
         </button>
       </div>
+
     </div>
   );
 }
