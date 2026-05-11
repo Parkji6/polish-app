@@ -14,31 +14,32 @@ export default async function ConversationPage({
 
   if (scenario.subScenarios) {
     return (
-      <main className="min-h-screen bg-white px-4 py-10">
-        <div className="max-w-sm mx-auto">
-          <div className="mb-6">
-            <Link href="/" className="text-sm text-gray-500">
-              ← Wybierz inny
-            </Link>
+      <main className="min-h-screen bg-bd-bg">
+        {/* Header */}
+        <div className="border-b border-bd-rule bg-bd-bg px-4 md:px-14 py-4">
+          <Link href="/" className="bd-mono text-bd-ink2 hover:text-bd-ink">
+            ← Wybierz inny
+          </Link>
+          <div className="flex items-center gap-4 mt-4">
+            <span className="text-[52px] leading-none shrink-0">{scenario.emoji}</span>
+            <div>
+              <div className="bd-display text-[28px] md:text-[40px]">{scenario.name}</div>
+              <p className="bd-mono text-bd-ink2 mt-1">Wybierz scenariusz</p>
+            </div>
           </div>
-          <div className="text-center mb-8">
-            <div className="text-4xl mb-2">{scenario.emoji}</div>
-            <h1 className="text-xl font-bold text-gray-900">{scenario.name}</h1>
-            <p className="text-sm text-gray-500 mt-1">Wybierz scenariusz</p>
-          </div>
-          <div className="flex flex-col gap-3">
+        </div>
+
+        {/* Sub-scenario grid */}
+        <div className="px-4 md:px-14 py-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-[14px] md:gap-[18px]">
             {scenario.subScenarios.map((sub) => (
               <Link
                 key={sub.id}
                 href={`/conversation/${id}/${sub.id}`}
-                className="flex flex-col border border-gray-200 rounded-2xl p-4 active:bg-gray-50"
+                className="bd-hard bd-card-hover bg-bd-panel flex flex-col p-5 min-h-[120px]"
               >
-                <span className="font-semibold text-gray-900 text-sm">
-                  {sub.name}
-                </span>
-                <span className="text-xs text-gray-500 mt-1">
-                  {sub.description}
-                </span>
+                <span className="bd-display-md text-[20px] text-bd-ink">{sub.name}</span>
+                <span className="text-[13px] text-bd-ink2 mt-2 leading-snug">{sub.description}</span>
               </Link>
             ))}
           </div>

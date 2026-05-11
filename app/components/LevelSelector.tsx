@@ -21,16 +21,13 @@ export default function LevelSelector() {
   }
 
   return (
-    <div className="flex items-center gap-0.5 bg-gray-100 rounded-full px-1 py-1">
+    <div className="flex items-center gap-1">
       {LEVELS.map((l) => (
         <button
           key={l}
           onClick={() => handleChange(l)}
-          className={`text-xs px-2 py-0.5 rounded-full transition-colors ${
-            level === l
-              ? "bg-black text-white"
-              : "text-gray-500 hover:text-gray-900"
-          }`}
+          className={`bd-pill ${level === l ? "bd-pill-on" : ""}`}
+          style={{ padding: "4px 8px" }}
         >
           {l}
         </button>

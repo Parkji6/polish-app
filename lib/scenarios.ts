@@ -215,3 +215,18 @@ Casual and colloquial Polish is correct Polish. Do not flag fillers, contraction
 
 If the message has no errors: respond only with "✓". Nothing else.
 If there are errors: explain each briefly in English (1–2 lines per error), show the corrected form, give the rule in one sentence. Max 3 corrections. Be encouraging, not clinical.`;
+
+export const SCENARIO_META: Record<string, { level?: string; en?: string; mins?: number; vocab?: number }> = {
+  kawiarnia:          { level: "A1", en: "Café",             mins: 6,  vocab: 24 },
+  piekarnia:          { level: "A1", en: "Bakery",           mins: 5,  vocab: 19 },
+  sklep:              { level: "A1", en: "Corner shop",      mins: 5,  vocab: 22 },
+  sasiad:             { level: "A2", en: "Neighbour",        mins: 9,  vocab: 31 },
+  restauracja:        { level: "A2", en: "Restaurant",       mins: 10, vocab: 38 },
+  sklep_z_ubraniami:  { level: "A2", en: "Clothing store",   mins: 11, vocab: 42 },
+  taksowka:           { level: "B1", en: "Taxi",             mins: 25, vocab: 78 },
+  znajomy:            { level: "B1", en: "Friend",           mins: 18, vocab: 64 },
+  dziecko_5:          { level: "A2", en: "5-year-old",       mins: 8,  vocab: 28 },
+  dziecko_12:         { level: "B1", en: "Teen",             mins: 12, vocab: 44 },
+  partner:            { level: "B2", en: "Partner",          mins: 15, vocab: 58 },
+  rodzice_ani:        { level: "B2", en: "Sandra's parents", mins: 22, vocab: 72 },
+};
