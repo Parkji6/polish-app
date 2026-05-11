@@ -49,35 +49,47 @@ export default function ReportsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-white px-4 py-10">
-      <div className="max-w-sm mx-auto">
-        <div className="flex items-center gap-3 mb-6">
-          <Link href="/" className="text-sm text-gray-500">
-            ← Wróć
-          </Link>
-          <h1 className="font-semibold text-gray-900">Zgłoszenia</h1>
+    <main className="min-h-screen bg-bd-bg">
+
+      {/* Hero band */}
+      <div className="border-b border-bd-rule bg-bd-bg px-4 md:px-14 pt-8 pb-7">
+        <Link href="/" className="bd-mono text-bd-ink2 hover:text-bd-ink">
+          ← Wróć
+        </Link>
+        <p className="bd-mono text-bd-ink2 mt-6">Reports / your notes</p>
+        <div className="bd-display uppercase text-[52px] md:text-[84px] mt-2 leading-none">
+          TWOJE<br />UWAGI.
         </div>
+        <p className="bd-mono text-bd-ink2 mt-3">
+          Phrases and moments you flagged during practice.
+        </p>
+      </div>
+
+      {/* Content */}
+      <div className="px-4 md:px-14 py-[14px] md:py-[18px]">
 
         {reports.length === 0 ? (
-          <p className="text-sm text-gray-400 text-center mt-16">Brak zgłoszeń.</p>
+          <p className="bd-mono text-bd-ink2 mt-16 text-center">Brak zgłoszeń.</p>
         ) : (
           <>
-            <div className="flex gap-3 mb-6">
+            {/* Action row */}
+            <div className="flex items-center gap-2 mb-6">
               <button
                 onClick={handleCopyAll}
-                className="text-xs text-gray-500 hover:text-gray-800 transition-colors"
+                className={`bd-pill ${copied ? "bd-pill-on" : ""}`}
               >
-                {copied ? "Skopiowano ✓" : "📋 Kopiuj wszystko"}
+                {copied ? "SKOPIOWANO" : "KOPIUJ"}
               </button>
               <button
                 onClick={handleClearAll}
-                className="text-xs text-gray-400 hover:text-gray-700 transition-colors"
+                className="bd-pill"
               >
-                🗑️ Wyczyść wszystko
+                WYCZYŚĆ
               </button>
             </div>
 
-            <div className="flex flex-col gap-4">
+            {/* Report cards */}
+            <div className="flex flex-col gap-[14px] md:gap-[18px]">
               {reports.map((r) => {
                 const scenario = getScenario(r.scenarioId);
                 const scenarioName = scenario
@@ -91,21 +103,30 @@ export default function ReportsPage() {
                 });
 
                 return (
-                  <div key={r.id} className="border border-gray-100 rounded-2xl p-4 flex flex-col gap-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-medium text-gray-500">
+                  <div key={r.id} className="bd-hard bg-bd-panel p-5 flex flex-col gap-3">
+                    {/* Mono header */}
+                    <div className="flex items-center justify-between gap-4">
+                      <span className="bd-mono text-bd-ink2 truncate">
                         {scenarioName} · {r.level}
                       </span>
-                      <span className="text-xs text-gray-400">{date}</span>
+                      <span className="bd-mono text-bd-ink3 shrink-0">{date}</span>
                     </div>
-                    <p className="text-sm text-gray-800 leading-snug">
+
+                    {/* Reported message */}
+                    <p className="bd-display-md text-[20px] md:text-[22px] text-bd-ink">
                       &ldquo;{r.messageText}&rdquo;
                     </p>
+
+                    {/* User note */}
                     {r.userNote && (
-                      <p className="text-xs text-gray-500 italic">{r.userNote}</p>
+                      <p className="text-[14px] text-bd-ink2 leading-snug">{r.userNote}</p>
                     )}
-                    <p className="text-xs text-gray-400">
-                      {r.role === "persona" ? "Persona" : "Ty"} · {r.role === "persona" ? scenario?.emoji ?? "" : "👤"}
+
+                    {/* Role */}
+                    <p className="bd-mono text-bd-ink3">
+                      {r.role === "persona"
+                        ? `${scenario?.emoji ?? ""} Persona`
+                        : "Ty"}
                     </p>
                   </div>
                 );
@@ -114,6 +135,7 @@ export default function ReportsPage() {
           </>
         )}
       </div>
+
     </main>
   );
 }

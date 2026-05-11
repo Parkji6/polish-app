@@ -410,7 +410,7 @@ export default function ChatView({ systemPrompt, emoji: _emoji, name, backHref }
                       <div className="flex flex-col gap-2">
                         <textarea
                           className="w-full text-[12px] text-bd-ink outline-none resize-none"
-                          style={{ background: "#ece7da", border: "1.5px solid #1a1714", borderRadius: 4, padding: "8px 12px" }}
+                          style={{ background: "var(--color-bd-bg)", border: "1.5px solid #1a1714", borderRadius: 4, padding: "8px 12px" }}
                           rows={3}
                           placeholder="Co jest nie tak? / What's wrong?"
                           value={reportNote}
@@ -481,7 +481,7 @@ export default function ChatView({ systemPrompt, emoji: _emoji, name, backHref }
       <div className="bg-bd-panel border-t border-bd-rule px-8 py-[18px] flex items-center gap-3 shrink-0">
         <input
           className="flex-1 text-[14px] text-bd-ink outline-none placeholder:text-bd-ink3"
-          style={{ background: "#ece7da", border: "1.5px solid #1a1714", borderRadius: 4, padding: "14px 18px" }}
+          style={{ background: "var(--color-bd-bg)", border: "1.5px solid #1a1714", borderRadius: 4, padding: "14px 18px" }}
           placeholder="Napisz po polsku — albo spróbuj…"
           value={input}
           onChange={(e) => setInput(e.target.value)}
