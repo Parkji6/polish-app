@@ -38,12 +38,12 @@ export default function Home() {
 
       {/* ── Bento grid ───────────────────────────────────────── */}
       <div className="px-4 md:px-14 py-[14px] md:py-[18px]">
-        <div className="grid grid-cols-2 gap-[14px] md:grid-cols-4 md:gap-[18px]">
-          {scenarios.map((scenario, i) => {
-            const isHero = i === 0;
-            const isWide = i === 5;
-            const meta = SCENARIO_META[scenario.id];
+        {(() => {
+          const nonFamily = scenarios.filter(s => s.category !== "family");
+          const family = scenarios.filter(s => s.category === "family");
 
+          const renderCard = (scenario: typeof scenarios[0], i: number, isHero: boolean, isWide: boolean) => {
+            const meta = SCENARIO_META[scenario.id];
             return (
               <Link
                 key={scenario.id}
@@ -56,38 +56,25 @@ export default function Home() {
                   isWide ? "md:col-span-2" : "",
                 ].filter(Boolean).join(" ")}
               >
-                {/* Top row: level badge + index */}
                 <div className="flex items-start justify-between">
                   {meta?.level ? (
-                    <span
-                      className="bd-mono px-2 py-1 bg-bd-ember text-white"
-                      style={{ borderRadius: 2 }}
-                    >
+                    <span className="bd-mono px-2 py-1 bg-bd-ember text-white" style={{ borderRadius: 2 }}>
                       {meta.level}
                     </span>
                   ) : (
                     <span />
                   )}
-                  <span className="bd-mono text-bd-ink2">
-                    #{String(i + 1).padStart(2, "0")}
-                  </span>
+                  <span className="bd-mono text-bd-ink2">#{String(i + 1).padStart(2, "0")}</span>
                 </div>
-
-                {/* Emoji */}
                 <div className={`mt-2 leading-none ${isHero ? "text-[72px]" : "text-[48px]"}`}>
                   {scenario.emoji}
                 </div>
-
-                {/* Bottom: title + rule + description + stat */}
                 <div className="mt-auto pt-5 border-t border-bd-rule-soft">
                   <div className={`bd-display ${isHero ? "text-[40px] md:text-[72px]" : "text-[32px]"}`}>
                     {scenario.name}
                   </div>
                   <div className="flex items-baseline justify-between gap-2 mt-3">
-                    <span
-                      className="text-[13px] text-bd-ink2 leading-snug"
-                      style={{ maxWidth: isHero ? 420 : 240 }}
-                    >
+                    <span className="text-[13px] text-bd-ink2 leading-snug" style={{ maxWidth: isHero ? 420 : 240 }}>
                       {isHero ? scenario.description : (meta?.en ?? scenario.name)}
                     </span>
                     {meta?.mins != null && meta?.vocab != null && (
@@ -99,8 +86,30 @@ export default function Home() {
                 </div>
               </Link>
             );
-          })}
-        </div>
+          };
+
+          return (
+            <>
+              {/* Places grid */}
+              <div className="grid grid-cols-2 gap-[14px] md:grid-cols-4 md:gap-[18px]">
+                {nonFamily.map((scenario, i) => renderCard(scenario, i, i === 0, i === 5))}
+              </div>
+
+              {/* Family collapsible */}
+              <details className="group mt-[14px] md:mt-[18px]">
+                <summary className="flex items-center gap-4 py-4 border-t border-bd-rule cursor-pointer select-none list-none [&::-webkit-details-marker]:hidden">
+                  <span className="bd-mono text-bd-ink2 shrink-0">Rodzina · {family.length}</span>
+                  <span className="bd-display uppercase text-[28px] md:text-[40px] flex-1 leading-none">FAMILY</span>
+                  <span className="bd-mono text-bd-ink2 group-open:hidden">+ show</span>
+                  <span className="bd-mono text-bd-ink2 hidden group-open:inline">− hide</span>
+                </summary>
+                <div className="grid grid-cols-2 gap-[14px] md:grid-cols-5 md:gap-[18px] mt-[14px] md:mt-[18px]">
+                  {family.map((scenario, i) => renderCard(scenario, nonFamily.length + i, false, false))}
+                </div>
+              </details>
+            </>
+          );
+        })()}
       </div>
 
     </main>
